@@ -22,8 +22,9 @@ const register = async (req, res) => {
     const emailInLowerCase = email.toLowerCase();
 
     const existingUser = await User.findOne({ email: emailInLowerCase });
+
     if (existingUser) {
-      return res.status(400).json({ message: "User already Exists" });
+      return res.status(400).json({ message: "User already exists" });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -35,10 +36,17 @@ const register = async (req, res) => {
 
     return res.status(201).json({
       message: "User created successfully",
-      user: { id: newUser._id, email: newUser.email },
+      user: {
+        id: newUser._id,
+        email: newUser.email,
+      },
     });
   } catch (error) {
-    return res.status(500).json({ message: "Internal serval error" });
+    console.log("Register error:", error);
+
+    return res.status(500).json({
+      message: "Internal server error",
+    });
   }
 };
 
@@ -55,18 +63,25 @@ const login = async (req, res) => {
 
     const emailInLowerCase = email.toLowerCase();
 
-    const existingUser = await User.findOne({ email: emailInLowerCase });
+    const existingUser = await User.findOne({
+      email: emailInLowerCase,
+    });
+
     if (!existingUser) {
-      return res.status(400).json({ message: "User not found" });
+      return res.status(400).json({
+        message: "Invalid email or password",
+      });
     }
 
     const isPasswordValid = await bcrypt.compare(
       password,
-      existingUser.password,
+      existingUser.password
     );
 
     if (!isPasswordValid) {
-      return res.status(400).json({ message: "Invalid password" });
+      return res.status(400).json({
+        message: "Invalid email or password",
+      });
     }
 
     const token = jwt.sign(
@@ -75,17 +90,26 @@ const login = async (req, res) => {
         email: existingUser.email,
       },
       process.env.JWT_SECRET,
-      { expiresIn: "1d" },
+      { expiresIn: "1d" }
     );
 
     return res.status(200).json({
       message: "Login successful",
       token,
+      userId: existingUser._id,
     });
   } catch (error) {
-    return res.status(500).json({ message: "Internal server error" });
+    console.log("Login error:", error);
+
+    return res.status(500).json({
+      message: "Internal server error",
+    });
   }
 };
 
-const authController = { register, login };
+const authController = {
+  register,
+  login,
+};
+
 module.exports = authController;
