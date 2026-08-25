@@ -46,7 +46,7 @@ export default function QuizResult() {
       </div>
 
       <div className="btn-row" style={{ marginTop: "1.5rem" }}>
-        <Link to="/" className="btn btn--ghost">
+        <Link to="/quizzes" className="btn btn--ghost">
           Back to quizzes
         </Link>
         <Link to="/results" className="btn">
