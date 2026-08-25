@@ -148,30 +148,99 @@ const submitQuiz = async (req, res) => {
                 message: "Invalid quiz ID",
             });
         }
+
+        const quiz = await Quiz.findById(req.params.id);
+
+        if (!quiz) {
+            return res.status(404).json({
+                message: "Quiz not found",
+            });
+        }
+
         const { answers } = req.body;
 
-        if (!answers || !Array.isArray(answers) || answers.length === 0) {
+        if (!answers) {
             return res.status(400).json({
                 message: "Answers are required",
             });
         }
 
+        if (!Array.isArray(answers)) {
+            return res.status(400).json({
+                message: "Answers must be an array",
+            });
+        }
+
+        if (answers.length === 0) {
+            return res.status(400).json({
+                message: "At least one answer is required",
+            });
+        }
+
+        const submittedQuestionIds = answers.map((answer) =>
+            String(answer.questionId || "")
+        );
+
+        const invalidQuestionId = submittedQuestionIds.find(
+            (questionId) => !mongoose.Types.ObjectId.isValid(questionId)
+        );
+
+        if (invalidQuestionId) {
+            return res.status(400).json({
+                message: "Invalid question ID",
+            });
+        }
+
+        const duplicateQuestionId = submittedQuestionIds.find(
+            (questionId, index) =>
+                submittedQuestionIds.indexOf(questionId) !== index
+        );
+
+        if (duplicateQuestionId) {
+            return res.status(400).json({
+                message: "Duplicate question answers are not allowed",
+            });
+        }
+
+        const questions = await Question.find({
+            quizId: req.params.id,
+        });
+
+        if (questions.length === 0) {
+            return res.status(400).json({
+                message: "Quiz has no questions",
+            });
+        }
+
+        const questionsById = new Map(
+            questions.map((question) => [String(question._id), question])
+        );
+
+        const outsideQuizQuestionId = submittedQuestionIds.find(
+            (questionId) => !questionsById.has(questionId)
+        );
+
+        if (outsideQuizQuestionId) {
+            return res.status(400).json({
+                message: "Submitted question does not belong to this quiz",
+            });
+        }
+
         let score = 0;
 
-        for (const answer of answers) {
-            const question = await Question.findById(answer.questionId);
+        for (const submittedAnswer of answers) {
+            const question = questionsById.get(
+                String(submittedAnswer.questionId)
+            );
 
-            if (!question) {
-                continue;
-            }
-
-            if (answer.answer === question.correctAnswer) {
-                score++;
+            if (submittedAnswer.answer === question.correctAnswer) {
+                score += 1;
             }
         }
 
-        const totalQuestions = answers.length;
-        const percentage = (score / totalQuestions) * 100;
+        const totalQuestions = questions.length;
+        const percentage =
+            totalQuestions === 0 ? 0 : (score / totalQuestions) * 100;
 
         const result = await Result.create({
             userId: req.user.id,

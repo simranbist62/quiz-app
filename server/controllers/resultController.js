@@ -1,4 +1,6 @@
 const Result = require("../models/Result");
+const mongoose = require("mongoose");
+const Quiz = require("../models/Quiz");
 
 // Create a result
 const createResult = async (req, res) => {
@@ -19,6 +21,20 @@ const createResult = async (req, res) => {
             return res.status(400).json({
                 message:
                     "Quiz ID, score and total questions are required",
+            });
+        }
+
+        if (!mongoose.Types.ObjectId.isValid(quizId)) {
+            return res.status(400).json({
+                message: "Invalid quiz ID",
+            });
+        }
+
+        const quiz = await Quiz.findById(quizId);
+
+        if (!quiz) {
+            return res.status(404).json({
+                message: "Quiz not found",
             });
         }
 
@@ -65,6 +81,12 @@ const getResults = async (req, res) => {
 // Get one result
 const getResultById = async (req, res) => {
     try {
+        if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+            return res.status(400).json({
+                message: "Invalid result ID",
+            });
+        }
+
         const result = await Result.findOne({
             _id: req.params.id,
             userId: req.user.id,
