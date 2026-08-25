@@ -11,7 +11,11 @@ export default function QuizResult() {
       <div className="page page--narrow">
         <div className="card empty-state">
           <p>No result to show. Take the quiz first.</p>
-          <Link to={`/quizzes/${id}`} className="btn" style={{ marginTop: "1rem", display: "inline-block" }}>
+          <Link
+            to={`/quizzes/${id}`}
+            className="btn"
+            style={{ marginTop: "1rem", display: "inline-block" }}
+          >
             Go to quiz
           </Link>
         </div>
@@ -28,7 +32,9 @@ export default function QuizResult() {
       <h1 className="page-title">Result</h1>
 
       <div className="card result-mark">
-        <div className={`result-mark__score${passed ? " result-mark__score--pass" : ""}`}>
+        <div
+          className={`result-mark__score${passed ? " result-mark__score--pass" : ""}`}
+        >
           {Math.round(percentage)}%
         </div>
         <div className="result-mark__fraction">

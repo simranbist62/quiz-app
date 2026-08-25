@@ -22,14 +22,16 @@ export default function MyResults() {
   }, []);
 
   const sorted = [...results].sort(
-    (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+    (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
   );
 
   return (
     <div className="page">
       <p className="eyebrow">Your history</p>
       <h1 className="page-title">Results</h1>
-      <p className="page-subtitle">Every quiz you've completed, most recent first.</p>
+      <p className="page-subtitle">
+        Every quiz you've completed, most recent first.
+      </p>
 
       {loading && <p className="loading-state">Loading results…</p>}
       {error && <div className="error-banner">{error}</div>}
@@ -60,7 +62,9 @@ export default function MyResults() {
               </div>
               <div
                 className="result-row__score"
-                style={{ color: passed ? "var(--pass-green)" : "var(--pen-red)" }}
+                style={{
+                  color: passed ? "var(--pass-green)" : "var(--pen-red)",
+                }}
               >
                 {Math.round(result.percentage)}%
               </div>

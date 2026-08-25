@@ -12,7 +12,9 @@ export default function Login() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const from = location.state?.from || "/";
+  // After successful login, go to the page the user originally wanted.
+  // If there is no previous page, go to the Quiz List.
+  const from = location.state?.from || "/quizzes";
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -21,6 +23,8 @@ export default function Login() {
 
     try {
       await login(email, password);
+
+      // Login successful → go to Quiz List
       navigate(from, { replace: true });
     } catch (err) {
       setError(err.response?.data?.message || "Could not log in. Try again.");
@@ -32,7 +36,9 @@ export default function Login() {
   return (
     <div className="page page--narrow">
       <p className="eyebrow">Welcome back</p>
+
       <h1 className="page-title">Log in</h1>
+
       <p className="page-subtitle">Pick up where you left off.</p>
 
       <div className="card">
@@ -41,6 +47,7 @@ export default function Login() {
 
           <div className="field">
             <label htmlFor="email">Email</label>
+
             <input
               id="email"
               type="email"
@@ -53,6 +60,7 @@ export default function Login() {
 
           <div className="field">
             <label htmlFor="password">Password</label>
+
             <input
               id="password"
               type="password"

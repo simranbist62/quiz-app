@@ -19,7 +19,8 @@ export default function QuizList() {
       <p className="eyebrow">{quizzes.length} available</p>
       <h1 className="page-title">Pick a quiz</h1>
       <p className="page-subtitle">
-        Every quiz is timed only by your patience. Answer, submit, see your mark.
+        Every quiz is timed only by your patience. Answer, submit, see your
+        mark.
       </p>
 
       {loading && <p className="loading-state">Loading quizzes…</p>}
@@ -29,9 +30,13 @@ export default function QuizList() {
         <div className="card empty-state">No quizzes yet. Check back soon.</div>
       )}
 
-      <div className="quiz-grid">
+      <div className="quiz-list">
         {quizzes.map((quiz, i) => (
-          <Link to={`/quizzes/${quiz._id}`} className="card quiz-card" key={quiz._id}>
+          <Link
+            to={`/quizzes/${quiz._id}`}
+            className="card quiz-card"
+            key={quiz._id}
+          >
             <span className="quiz-card__index">
               {String(i + 1).padStart(2, "0")}
             </span>
