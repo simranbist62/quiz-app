@@ -73,9 +73,14 @@ const getQuestions = async (req, res) => {
 // Get questions for one quiz
 const getQuestionsByQuiz = async (req, res) => {
     try {
-        const questions = await Question.find({
-            quizId: req.params.quizId,
-        });
+        const questions = await Question.find(
+            {
+                quizId: req.params.quizId,
+            },
+            {
+                correctAnswer: 0,
+            }
+        );
 
         return res.status(200).json({
             questions,
