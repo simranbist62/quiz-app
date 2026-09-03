@@ -7,7 +7,6 @@ const register = async (req, res) => {
     const username = req.body.username;
     const email = req.body.email;
     const password = req.body.password;
-    const username = req.body.username;
 
     if (!username || !email || !password) {
       return res.status(400).json({
