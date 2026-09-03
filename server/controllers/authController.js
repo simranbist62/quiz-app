@@ -4,33 +4,39 @@ const User = require("../models/User");
 
 const register = async (req, res) => {
   try {
+    const username = req.body.username;
     const email = req.body.email;
     const password = req.body.password;
     const username = req.body.username;
 
-    if (!email || !password) {
-      return res
-        .status(400)
-        .json({ message: "Please enter email and password!" });
+    if (!username || !email || !password) {
+      return res.status(400).json({
+        message: "Please enter username, email and password!",
+      });
     }
 
     if (password.length < 6) {
-      return res
-        .status(400)
-        .json({ message: "Password must be at least 6 characters" });
+      return res.status(400).json({
+        message: "Password must be at least 6 characters",
+      });
     }
 
     const emailInLowerCase = email.toLowerCase();
 
-    const existingUser = await User.findOne({ email: emailInLowerCase });
+    const existingUser = await User.findOne({
+      email: emailInLowerCase,
+    });
 
     if (existingUser) {
-      return res.status(400).json({ message: "User already exists" });
+      return res.status(400).json({
+        message: "User already exists",
+      });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const newUser = await User.create({
+      username,
       email: emailInLowerCase,
       username,
       password: hashedPassword,
@@ -40,6 +46,7 @@ const register = async (req, res) => {
       message: "User created successfully",
       user: {
         id: newUser._id,
+        username: newUser.username,
         email: newUser.email,
         username: newUser.username,
       },
@@ -59,9 +66,9 @@ const login = async (req, res) => {
     const password = req.body.password;
 
     if (!email || !password) {
-      return res
-        .status(400)
-        .json({ message: "Email and password are required" });
+      return res.status(400).json({
+        message: "Email and password are required",
+      });
     }
 
     const emailInLowerCase = email.toLowerCase();
@@ -78,7 +85,7 @@ const login = async (req, res) => {
 
     const isPasswordValid = await bcrypt.compare(
       password,
-      existingUser.password
+      existingUser.password,
     );
 
     if (!isPasswordValid) {
@@ -101,7 +108,9 @@ const login = async (req, res) => {
         email: existingUser.email,
       },
       process.env.JWT_SECRET,
-      { expiresIn: "1d" }
+      {
+        expiresIn: "1d",
+      },
     );
 
     return res.status(200).json({

@@ -4,116 +4,110 @@ const Quiz = require("../models/Quiz");
 
 // Create a result
 const createResult = async (req, res) => {
-    try {
-        const {
-            quizId,
-            score,
-            totalQuestions,
-            percentage,
-        } = req.body;
+  try {
+    const { quizId, score, totalQuestions, percentage } = req.body;
 
-        if (
-            !quizId ||
-            score === undefined ||
-            !totalQuestions ||
-            percentage === undefined
-        ) {
-            return res.status(400).json({
-                message:
-                    "Quiz ID, score and total questions are required",
-            });
-        }
-
-        if (!mongoose.Types.ObjectId.isValid(quizId)) {
-            return res.status(400).json({
-                message: "Invalid quiz ID",
-            });
-        }
-
-        const quiz = await Quiz.findById(quizId);
-
-        if (!quiz) {
-            return res.status(404).json({
-                message: "Quiz not found",
-            });
-        }
-
-        const result = await Result.create({
-            userId: req.user.id,
-            quizId,
-            score,
-            totalQuestions,
-            percentage,
-        });
-
-        return res.status(201).json({
-            message: "Result created successfully",
-            result,
-        });
-    } catch (error) {
-        console.log("CREATE RESULT ERROR:", error);
-
-        return res.status(500).json({
-            message: "Internal server error",
-        });
+    if (
+      !quizId ||
+      score === undefined ||
+      !totalQuestions ||
+      percentage === undefined
+    ) {
+      return res.status(400).json({
+        message: "Quiz ID, score and total questions are required",
+      });
     }
+
+    if (!mongoose.Types.ObjectId.isValid(quizId)) {
+      return res.status(400).json({
+        message: "Invalid quiz ID",
+      });
+    }
+
+    const quiz = await Quiz.findById(quizId);
+
+    if (!quiz) {
+      return res.status(404).json({
+        message: "Quiz not found",
+      });
+    }
+
+    const result = await Result.create({
+      userId: req.user.id,
+      quizId,
+      score,
+      totalQuestions,
+      percentage,
+    });
+
+    return res.status(201).json({
+      message: "Result created successfully",
+      result,
+    });
+  } catch (error) {
+    console.log("CREATE RESULT ERROR:", error);
+
+    return res.status(500).json({
+      message: "Internal server error",
+    });
+  }
 };
 
 // Get all results
 const getResults = async (req, res) => {
-    try {
-        const results = await Result.find({
-            userId: req.user.id,
-        });
+  try {
+    const results = await Result.find({
+      userId: req.user.id,
+    });
 
-        return res.status(200).json({
-            results,
-        });
-    } catch (error) {
-        console.log("GET RESULTS ERROR:", error);
+    return res.status(200).json({
+      results,
+    });
+  } catch (error) {
+    console.log("GET RESULTS ERROR:", error);
 
-        return res.status(500).json({
-            message: "Internal server error",
-        });
-    }
+    return res.status(500).json({
+      message: "Internal server error",
+    });
+  }
 };
 
 // Get one result
 const getResultById = async (req, res) => {
-    try {
-        if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-            return res.status(400).json({
-                message: "Invalid result ID",
-            });
-        }
-
-        const result = await Result.findOne({
-            _id: req.params.id,
-            userId: req.user.id,
-        });
-
-        if (!result) {
-            return res.status(404).json({
-                message: "Result not found",
-            });
-        }
-
-        return res.status(200).json({
-            result,
-        });
-    } catch (error) {
-        console.log("GET RESULT ERROR:", error);
-
-        return res.status(500).json({
-            message: "Internal server error",
-        });
+  try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({
+        message: "Invalid result ID",
+      });
     }
+
+    const result = await Result.findOne({
+      _id: req.params.id,
+      userId: req.user.id,
+    });
+
+    if (!result) {
+      return res.status(404).json({
+        message: "Result not found",
+      });
+    }
+
+    return res.status(200).json({
+      result,
+    });
+  } catch (error) {
+    console.log("GET RESULT ERROR:", error);
+
+    return res.status(500).json({
+      message: "Internal server error",
+    });
+  }
 };
 
 const resultController = {
-    createResult,
-    getResults,
-    getResultById,
+  createResult,
+  getResults,
+  getResultById,
 };
 
 module.exports = resultController;
