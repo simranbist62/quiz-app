@@ -13,6 +13,12 @@ const createQuestion = async (req, res) => {
             });
         }
 
+        if (!mongoose.Types.ObjectId.isValid(quizId)) {
+            return res.status(400).json({
+                message: "Invalid quiz ID",
+            });
+        }
+
         if (!Array.isArray(options) || options.length < 2) {
             return res.status(400).json({
                 message: "At least 2 options are required",
@@ -56,7 +62,7 @@ const createQuestion = async (req, res) => {
 // Get all questions
 const getQuestions = async (req, res) => {
     try {
-        const questions = await Question.find();
+        const questions = await Question.find().select("-correctAnswer");
 
         return res.status(200).json({
             questions,
@@ -73,14 +79,23 @@ const getQuestions = async (req, res) => {
 // Get questions for one quiz
 const getQuestionsByQuiz = async (req, res) => {
     try {
-        const questions = await Question.find(
-            {
-                quizId: req.params.quizId,
-            },
-            {
-                correctAnswer: 0,
-            }
-        );
+        if (!mongoose.Types.ObjectId.isValid(req.params.quizId)) {
+            return res.status(400).json({
+                message: "Invalid quiz ID",
+            });
+        }
+
+        const quiz = await Quiz.findById(req.params.quizId);
+
+        if (!quiz) {
+            return res.status(404).json({
+                message: "Quiz not found",
+            });
+        }
+
+        const questions = await Question.find({
+            quizId: req.params.quizId,
+        }).select("-correctAnswer");
 
         return res.status(200).json({
             questions,
@@ -103,7 +118,9 @@ const getQuestionById = async (req, res) => {
             });
         }
 
-        const question = await Question.findById(req.params.id);
+        const question = await Question.findById(req.params.id).select(
+            "-correctAnswer"
+        );
 
         if (!question) {
             return res.status(404).json({
@@ -129,6 +146,48 @@ const updateQuestion = async (req, res) => {
         if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
             return res.status(400).json({
                 message: "Invalid question ID",
+            });
+        }
+
+        const { quizId, options, correctAnswer } = req.body;
+
+        if (quizId && !mongoose.Types.ObjectId.isValid(quizId)) {
+            return res.status(400).json({
+                message: "Invalid quiz ID",
+            });
+        }
+
+        if (options && (!Array.isArray(options) || options.length < 2)) {
+            return res.status(400).json({
+                message: "At least 2 options are required",
+            });
+        }
+
+        if (quizId) {
+            const quiz = await Quiz.findById(quizId);
+
+            if (!quiz) {
+                return res.status(404).json({
+                    message: "Quiz not found",
+                });
+            }
+        }
+
+        const existingQuestion = await Question.findById(req.params.id);
+
+        if (!existingQuestion) {
+            return res.status(404).json({
+                message: "Question not found",
+            });
+        }
+
+        const nextOptions = options || existingQuestion.options;
+        const nextCorrectAnswer =
+            correctAnswer || existingQuestion.correctAnswer;
+
+        if (!nextOptions.includes(nextCorrectAnswer)) {
+            return res.status(400).json({
+                message: "Correct answer must be one of the options",
             });
         }
 

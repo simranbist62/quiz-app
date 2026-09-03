@@ -6,6 +6,7 @@ const register = async (req, res) => {
   try {
     const email = req.body.email;
     const password = req.body.password;
+    const username = req.body.username;
 
     if (!email || !password) {
       return res
@@ -31,6 +32,7 @@ const register = async (req, res) => {
 
     const newUser = await User.create({
       email: emailInLowerCase,
+      username,
       password: hashedPassword,
     });
 
@@ -39,6 +41,7 @@ const register = async (req, res) => {
       user: {
         id: newUser._id,
         email: newUser.email,
+        username: newUser.username,
       },
     });
   } catch (error) {
@@ -84,6 +87,14 @@ const login = async (req, res) => {
       });
     }
 
+    if (!process.env.JWT_SECRET) {
+      console.log("Login error: JWT_SECRET is not configured");
+
+      return res.status(500).json({
+        message: "Server authentication is not configured",
+      });
+    }
+
     const token = jwt.sign(
       {
         id: existingUser._id,
@@ -97,6 +108,7 @@ const login = async (req, res) => {
       message: "Login successful",
       token,
       userId: existingUser._id,
+      username: existingUser.username || existingUser.email,
     });
   } catch (error) {
     console.log("Login error:", error);
